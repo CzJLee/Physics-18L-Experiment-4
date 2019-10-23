@@ -21,15 +21,17 @@ def lcg():
 	seed = ((seed * a) + b) % m 
 	return seed / 2**32
 
+def verify_uniform_hist():
+	rand = []
+	for i in range(0,10000):
+		rand.append(lcg())
+
+	pyplot.hist(rand, bins = 100)
+	pyplot.show()
 #Uncomment below to produce a histogram of 10000 points generated from the lcg function. It should create a uniform histogram showing that lcg is uniformly distributed. 
-# rand = []
-# for i in range(0,10000):
-# 	rand.append(lcg())
+#verify_uniform_hist()
 
-# pylab.hist(rand, bins = 100)
-# pylab.show()
-
-def ring(rad_a, rad_b, n=10):
+def ring(rad_a = 10, rad_b = 12, n=20):
 	#Generate a random point that falls within a ring of inner radius rad_a and outer radius rad_b
 	#Assume rad_a < rad_b
 
@@ -50,6 +52,7 @@ def ring(rad_a, rad_b, n=10):
 			x.append(rand_x)
 			y.append(rand_y)
 	
+	#Plot spaghetti
 	pyplot.ion()
 	circlea = pyplot.Circle((0, 0), rad_a, fill=False, color = "blue")
 	circleb = pyplot.Circle((0,0), rad_b, fill=False, color = "blue")
@@ -62,6 +65,6 @@ def ring(rad_a, rad_b, n=10):
 	pyplot.pause(0.0001)
 	pyplot.clf()
 	
-
+#Plot 30 figures.
 for i in range(0,30):
-	ring(10, 15, 20)
+	ring()
