@@ -21,12 +21,12 @@ def lcg():
 	seed = ((seed * a) + b) % m 
 	return seed / 2**32
 
+#Uncomment below to produce a histogram of 10000 points generated from the lcg function. It should create a uniform histogram showing that lcg is uniformly distributed. 
 # rand = []
 # for i in range(0,10000):
 # 	rand.append(lcg())
 
 # pylab.hist(rand, bins = 100)
-
 # pylab.show()
 
 def ring(rad_a, rad_b, n=10):
@@ -43,17 +43,25 @@ def ring(rad_a, rad_b, n=10):
 	y = []
 
 	while(len(x) < n):
-		rand_x = random.uniform(0, rad_b) * random.randrange(-1, 2, 2)
-		rand_y = random.uniform(0, rad_b) * random.randrange(-1, 2, 2)
-		if rad_a <= sqrt(rand_x**2 + rand_y**2) <= rad_b:
+		rand_x = random.uniform(0, rad_b) * random.randrange(-1, 2, 2) #Generate a random number in (-rad_b, rad_b)
+		rand_y = random.uniform(0, rad_b) * random.randrange(-1, 2, 2) #Generate a random number in (-rad_b, rad_b)
+		if rad_a <= sqrt(rand_x**2 + rand_y**2) <= rad_b: 
+			#Test to see if the point falls within the ring. I
 			x.append(rand_x)
 			y.append(rand_y)
-
+	
+	pyplot.ion()
+	circlea = pyplot.Circle((0, 0), rad_a, fill=False, color = "blue")
+	circleb = pyplot.Circle((0,0), rad_b, fill=False, color = "blue")
+	fig, ax = pyplot.subplots() 
+	ax.add_artist(circlea)
+	ax.add_artist(circleb)
+	ax.set(xlim=(-rad_b, rad_b), ylim=(-rad_b, rad_b))
 	pyplot.plot(x, y, "ro")
 	pyplot.draw()
 	pyplot.pause(0.0001)
 	pyplot.clf()
 	
 
-for i in range(0,100):
-	ring(10, 12, 10)
+for i in range(0,30):
+	ring(10, 15, 20)
