@@ -1,3 +1,17 @@
+"""
+Physics 18L - Experiment 4 - Day 1
+Christian Lee
+  
+Professor: N. Whitehorn
+TA: Teresa Le
+Lab Date: Wednesday, Oct 23, 2019
+UCLA Physics Department
+
+Required libraries: random, matplotlib, math
+
+Psychophysics and random numbers
+"""
+
 import random
 from matplotlib import pyplot
 from math import sqrt
