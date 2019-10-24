@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class ParticleBox: 
-	def __init__(self, init_state = [[1, 0, 0, -1]], box_bounds = [-2, 2, -2, 2], ball_size = 16, mass=0.05, gravity=9.81):
+	def __init__(self, init_state = [[1, 0, 1, 1]], box_bounds = [-2, 2, -2, 2], ball_size = 16, mass=0.05, gravity=9.81):
 		#init_state is an [N x 4] array, where N is the number of particles:
 		#[[x1, y1, vx1, vy1],
 		#[x2, y2, vx2, vy2], ...]
@@ -32,22 +32,49 @@ class ParticleBox:
 		self.state = self.init_state.copy() #Shallow copy the initial state into state, which will store the updates states as the particle moves. 
 		self.bounds = box_bounds
 		self.g = gravity #Gravity
+		self.collision_scaling_factor = self.size*10
 
 	def step(self, dt):
-		# update positions
-		self.state[:, :2] += dt * self.state[:, 2:]
+		#Calculate new position using the current velocity. 
+		#x_i+1 = x_i + v
+		self.state[:, :2] += self.state[:, 2:] * dt
+
+		#Calculate logic when particle hits a wall
+		#If particle reaches a wall, keep velocity along axis of the wall constant, and multiply perpendicular velocity by -1. 
+		for n in range(0, len(self.state)):
+			if self.state[n][0] <= self.bounds[0] + self.size/self.collision_scaling_factor:
+				#Particle bounces off left wall
+				self.state[n][0] = self.bounds[0] + self.size/self.collision_scaling_factor
+				self.state[n][2] *= -1
+			if self.state[n][0] >= self.bounds[1] - self.size/self.collision_scaling_factor:
+				#Particle bounces off right wall
+				self.state[n][0] = self.bounds[1] - self.size/self.collision_scaling_factor
+				self.state[n][2] *= -1
+			if self.state[n][1] <= self.bounds[2] + self.size/self.collision_scaling_factor:
+				#Particle bounces off bottom wall
+				self.state[n][1] = self.bounds[2] + self.size/self.collision_scaling_factor
+				self.state[n][3] *= -1
+			if self.state[n][1] >= self.bounds[3] - self.size/self.collision_scaling_factor:
+				#Particle bounces off top wall
+				self.state[n][1] = self.bounds[3] - self.size/self.collision_scaling_factor
+				self.state[n][3] *= -1
+
+		#Apply gravity. 
+		#Gravity is applied as a force independant of particle mass. v_y = - g * dt
+		for n in range(0, len(self.state)):
+			self.state[n][3] += -self.g * dt
 
 #Set up initial state
-np.random.seed(0) #Set constant seed.
-init_state = -0.5 + np.random.random((1, 4)) #Randomly Generate (# of particles, # of elements (4 required))
+#np.random.seed(0) #Set constant seed.
+init_state = -0.5 + np.random.random((10, 4)) #Randomly Generate (# of particles, # of elements (4 required))
 #All particle dimension start with a position and veloicty between (-0.5, 0.5) produced by a gaussain distribution about 0. 
-#init_state[:, :2] *= 3.9 #Multiply the starting position of each particle by 3.9. 
+init_state[:, :2] *= 3.9 #Multiply the starting position of each particle by 3.9. 
 
 #Define the working box variable of ParticleBox class. 
-box = ParticleBox()
+box = ParticleBox(init_state)
 
 #Define step size dt. 
-fps = 30
+fps = 60
 dt = 1 / fps
 
 #fig determines where the plot is drawn on the screen. 
