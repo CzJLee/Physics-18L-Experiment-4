@@ -69,8 +69,8 @@ class ParticleBox:
 		#Apply gravity. 
 		#Gravity is applied as a force independant of particle mass. v_x = - g_x * dt, v_y = - g_y * dt.
 		for n in range(0, len(self.state)):
-			self.state[n][2] += -self.g[0] * dt
-			self.state[n][3] += -self.g[1] * dt
+			self.state[n][2] += self.g[0] * dt
+			self.state[n][3] += self.g[1] * dt
 
 		#Apply drag.
 		#Use a drag force that is linearly dependant on velocity. 
@@ -120,8 +120,6 @@ class ParticleBox:
 ############################### Animation ###############################
 
 #Set up initial state
-#np.random.seed(0) #Set constant seed.
-#num_particles = 5
 init_state = -0.5 + np.random.random((num_particles, 4)) #Randomly Generate (# of particles, # of elements (4 required))
 #All particle dimension start with a position and veloicty between (-0.5, 0.5) produced by a gaussain distribution about 0. 
 init_state[:, :2] *= 3.9 #Multiply the starting position of each particle by 3.9. 
@@ -162,8 +160,6 @@ def init():
 	for ball_num in range(num_particles):
 		ptrack[ball_num].set_data([], [])
 		yield ptrack[ball_num]
-	#rect.set_edgecolor('none')
-	#return particles, rect, ptrack[0]
 
 def animate(i):
 	#Sequential animation step that the animation function uses. The iterable i is not used. 
@@ -172,7 +168,6 @@ def animate(i):
 	box.step(dt) #Take one step forward in time (dt). This updates all particles in box.
 	
 	# update pieces of the animation
-	#rect.set_edgecolor('k')
 	particles.set_data(box.state[:, 0], box.state[:, 1])
 	yield particles
 	yield rect
