@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from math import sqrt
 
-from scipy.spatial.distance import pdist, squareform
+from main import *
 
 class ParticleBox: 
 	def __init__(self, init_state = [[1, 0, 1, 1]], box_bounds = [-2, 2, -2, 2], ball_size=16, mass=0.05, gravity=[0, 10], drag=0, central_force = False, central_force_power=1):
@@ -116,20 +116,19 @@ class ParticleBox:
 			self.track[n].append([self.state[n][0],self.state[n][1]])
 			if(len(self.track[n]) > 60):
 				self.track[n].pop(0)
-			
 
-
+############################### Animation ###############################
 
 #Set up initial state
 #np.random.seed(0) #Set constant seed.
-num_particles = 5
+#num_particles = 5
 init_state = -0.5 + np.random.random((num_particles, 4)) #Randomly Generate (# of particles, # of elements (4 required))
 #All particle dimension start with a position and veloicty between (-0.5, 0.5) produced by a gaussain distribution about 0. 
 init_state[:, :2] *= 3.9 #Multiply the starting position of each particle by 3.9. 
 init_state[:, 2:] += 1 #Multiply the starting velocity of each particle by 1. 
 
 #Define the working box variable of ParticleBox class. 
-box = ParticleBox(init_state, gravity=[0, 2], drag=0, central_force=True, central_force_power=0)
+box = ParticleBox(init_state, gravity=gravity, drag=drag, central_force=central_force, central_force_power=central_force_power)
 
 #Define step size dt. 
 fps = 60
