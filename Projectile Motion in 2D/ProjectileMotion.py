@@ -7,7 +7,7 @@ TA: Teresa Le
 Lab Date: Thursday, Oct 24, 2019
 UCLA Physics Department
 
-Required libraries: matplotlib, numpy
+Required libraries: matplotlib, numpy, scipy
 
 Projectile motion in 2D
 """
@@ -16,11 +16,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from math import sqrt
+from scipy.spatial.distance import pdist, squareform
 
 from main import *
 
 class ParticleBox: 
-	def __init__(self, init_state = [[1, 0, 1, 1]], box_bounds = [-2, 2, -2, 2], ball_size=16, mass=0.05, gravity=[0, 10], drag=0, central_force = False, central_force_power=1):
+	def __init__(self, init_state = [[1, 0, 1, 1]], box_bounds = [-2, 2, -2, 2], ball_size=16, mass=0.05, gravity=[0, 10], drag=0, central_force = False, central_force_power=1, random_mass = False, collisions = True):
 		#init_state is an [N x 4] array, where N is the number of particles:
 		#[[x1, y1, vx1, vy1],
 		#[x2, y2, vx2, vy2], ...]
@@ -40,6 +41,11 @@ class ParticleBox:
 		self.central_force = central_force
 		self.collision_scaling_factor = self.size*10
 		self.track = [ [] for ball in range(len(self.state))]
+		self.collisions = collisions
+
+		#If random mass is turned on, the particles will be assigned random mass with a gaussain distribution about mass. Else, they will all have a constant mass. 
+		if random_mass == True:
+			self.m = 2 * mass * np.random.random(self.init_state.shape[0])
 
 	def step(self, dt):
 		#Calculate new position using the current velocity. 
@@ -111,6 +117,43 @@ class ParticleBox:
 			for n in range(0, len(self.state)):
 				self.state[n][2], self.state[n][3] = c_force(self.state[n], self.central_force_power, self.m[n])
 
+
+		#Detect ball collision. 
+		if self.collisions:
+			#Identify balls i and j that are colliding
+			dist = squareform(pdist(self.state[:, :2]))
+			i, j = np.where(dist < 0.16)
+			unique = (i < j)
+			i = i[unique]
+			j = j[unique]
+			
+			for i, j in zip(i, j):
+				#Create relative position and velocity vectors between the two colliding particles
+				#The math is done with these relative vectors as it is easier working from a common origin
+				mi = self.m[i]
+				mj = self.m[j]
+				ri = self.state[i, :2]
+				rj = self.state[j, :2]
+				vi = self.state[i, 2:]
+				vj = self.state[j, 2:]
+				
+				r_rel = ri - rj
+				v_rel = vi - vj
+
+				#Find the center of momentum vector between the two particles
+				v_com = (mi * vi + mj * vj) / (mi + mj)
+
+				#Find reflected vector. See reflecton across a line in the plane. 
+				#https://en.wikipedia.org/wiki/Reflection_(mathematics)#Reflection_across_a_line_in_the_plane
+				v_ref = 2 * r_rel * (np.dot(v_rel, r_rel) / np.dot(r_rel, r_rel)) - v_rel
+
+				#Update collision velocities
+				self.state[i, 2:] = v_com + v_ref * mj / (mi + mj)
+				self.state[j, 2:] = v_com - v_ref * mi / (mi + mj) 
+
+
+
+
 		#Append the current position to the track
 		for n in range(0, len(self.state)):
 			self.track[n].append([self.state[n][0],self.state[n][1]])
@@ -123,13 +166,13 @@ class ParticleBox:
 init_state = -0.5 + np.random.random((num_particles, 4)) #Randomly Generate (# of particles, # of elements (4 required))
 #All particle dimension start with a position and veloicty between (-0.5, 0.5) produced by a gaussain distribution about 0. 
 init_state[:, :2] *= 3.9 #Multiply the starting position of each particle by 3.9. 
-init_state[:, 2:] += 1 #Multiply the starting velocity of each particle by 1. 
+init_state[:, 2:] *= 2 #Multiply the starting velocity of each particle by 1. 
 
 #Define the working box variable of ParticleBox class. 
-box = ParticleBox(init_state, gravity=gravity, drag=drag, central_force=central_force, central_force_power=central_force_power)
+box = ParticleBox(init_state, gravity=gravity, drag=drag, mass = ball_mass, central_force=central_force, central_force_power=central_force_power, random_mass = random_mass, collisions = ball_collisions)
 
 #Define step size dt. 
-fps = 60
+fps = 30
 dt = 1 / fps
 
 #fig determines where the plot is drawn on the screen. 
